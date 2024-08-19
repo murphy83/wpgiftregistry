@@ -327,16 +327,7 @@ class WP_Gift_Registry_Admin {
 	        'type' => 'textarea_small',
 	    ) );
 
-		$currency_symbol_placement = get_option('wishlist_settings')['currency_symbol_placement'];
-		$currency_symbol = get_option('wishlist_settings')['currency_symbol'];
-
-		if ( $currency_symbol_placement === 'before' ) {
-			$before = $currency_symbol . ' ';
-			$after = '';
-		} else {
-			$before = '';
-			$after = ' ' . $currency_symbol;
-		}
+	    $currency_settings = $this->get_currency_settings();
 
 		// Price
 		$metabox->add_group_field( $group_field, array(
@@ -344,8 +335,8 @@ class WP_Gift_Registry_Admin {
 		    'desc' => '',
 		    'id' => 'gift_price',
 		    'type' => 'text_small',
-		    'before_field' => $before,
-		    'after_field' => $after
+		    'before_field' => $currency_settings['before'],
+		    'after_field' => $currency_settings['after']
 		) );
 
 	    // URL
@@ -509,6 +500,34 @@ class WP_Gift_Registry_Admin {
 		) );
   	}
 
+  	/**
+  	 * @return array
+  	 */
+  	private function get_currency_settings(): array
+  	{
+  	    $wishlist_settings = get_option('wishlist_settings', array());
+  	    $currency_symbol_placement = isset($wishlist_settings['currency_symbol_placement'])?$wishlist_settings['currency_symbol']:null;
+  	    $currency_symbol = isset($wishlist_settings['currency_symbol'])?$wishlist_settings['currency_symbol']:null;
+  	    $before_and_after = array('before' => '', 'after' => '');
+  	    if($currency_symbol !== null) {
+  	        switch($currency_symbol_placement)
+  	        {
+  	            case "before":
+  	                $before_and_after['before'] = $currency_symbol . ' ';
+  	                $before_and_after['after'] = '';
+  	                break;
+  	            case "after":
+  	                $before_and_after['before'] = '';
+  	                $before_and_after['after'] = ' ' . $currency_symbol;
+  	                break;
+  	            default:
+  	                $before_and_after['before'] = '';
+  	                $before_and_after['after'] = '';
+  	        }
+  	    }
+  	    return $before_and_after;
+  	}
+  	
   	/**
   	 * Add a metabox to our cpt for showing which gifts have been reserved yet
   	 *
@@ -872,19 +891,8 @@ class WP_Gift_Registry_Admin {
 	    	'type' => 'textarea_small',
 	    ) );
 
-
-		$currency_symbol_placement = get_option('wishlist_settings')['currency_symbol_placement'];
-		$currency_symbol = get_option('wishlist_settings')['currency_symbol'];
-
-		if ( $currency_symbol_placement === 'before' ) {
-			$before = $currency_symbol . ' ';
-			$after = '';
-		} else {
-			$before = '';
-			$after = ' ' . $currency_symbol;
-		}
-
-
+        $currency_settings = $this->get_currency_settings();
+		
 		// Price
 		$cmb->add_group_field( $group_field_id, array(
 		    'name' => __( 'Price', 'wpgiftregistry' ),
@@ -893,8 +901,8 @@ class WP_Gift_Registry_Admin {
 		    'type' => 'text_small',
 		    //'type' => 'text_money',
 		    //'before_field' => '€', // Replaces default '$'
-		    'before_field' => $before,
-		    'after_field' => $after
+		    'before_field' => $currency_settings['before'],
+		    'after_field' => $currency_settings['after']
 		) );
 
 
